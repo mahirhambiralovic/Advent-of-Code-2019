@@ -1,5 +1,6 @@
-# PART 1
+from itertools import permutations
 
+# PART 1
 def get_params(firstcode):
     opcode = int(firstcode[-1])
     mode1 = int(firstcode[-3])
@@ -11,10 +12,10 @@ def get_params(firstcode):
         mode3 = int(firstcode[-5])
     return opcode,mode1,mode2,mode3
 
-def execute(intcode, i, opcode, mode1, mode2):
+def execute(intcode, i, opcode, mode1, mode2, input):
     if opcode == 3:
-        #print("INPUTTING 5 AT {}".format(intcode[i+1]))
-        intcode[intcode[i+1]] = 5
+        #print("INPUTTING {} AT {}".format(input,intcode[i+1]))
+        intcode[intcode[i+1]] = input
         return 2
     elif opcode == 4:
         if mode1 == 0:
@@ -23,7 +24,7 @@ def execute(intcode, i, opcode, mode1, mode2):
         else:
             par1 = intcode[i+1]
         #print("OUTPUT IS:")
-        print(par1)
+        #print(par1)
         return 2
     else:
         # Get value at address (if relevant)
@@ -89,28 +90,58 @@ def execute(intcode, i, opcode, mode1, mode2):
             return 4
 
 
+def run(input1, input2, intcode):
+    i=0
+    first = True
+    while(True):
+        #print()
+        if first:
+            input = input1
+        else:
+            input = input2
+
+        if i > len(intcode):
+            #print("End of intcodes")
+            break
+
+        firstcode = str(intcode[i])
+        #print("{}: [{}, {}, {}, {}]".format(i, firstcode, intcode[i+1], intcode[i+2], intcode[i+3], intcode[i+4]))
+        if len(firstcode) == 1:
+            opcode = int(firstcode)
+            if opcode == 3:
+                first = False
+            elif opcode == 4:
+                #print("Fetching first address {}".format(intcode[i+1]))
+                par1 = intcode[intcode[i+1]]
+                #print("OUTPUT IS:")
+                #print(par1)
+                return par1
+            #print("opcode {}".format(opcode))
+            i += execute(intcode, i, opcode, 0, 0, input)
+        else:
+            if int(firstcode[-1]) == 9:
+                print("HALT")
+                break
+            opcode, mode1, mode2, mode3 = get_params(firstcode)
+            if opcode == 4:
+                if mode1 == 0:
+                    #print("Fetching first address {}".format(intcode[i+1]))
+                    par1 = intcode[intcode[i+1]]
+                else:
+                    par1 = intcode[i+1]
+                #print("OUTPUT IS:")
+                #print(par1)
+                return par1
+            #print("opcode {}, modes: {}, {}".format(opcode, mode1, mode2))
+            i += execute(intcode, i, opcode, mode1, mode2, input)
+
 
 f = open("input.txt","r")
 intcode = f.read().split(",")
 intcode = list(map(int, intcode))
-##print(intcode)
-
-i=0
-while(True):
-    #print()
-    if i > len(intcode):
-        #print("End of intcodes")
-        break
-    firstcode = str(intcode[i])
-    #print("{}: [{}, {}, {}, {}]".format(i, firstcode, intcode[i+1], intcode[i+2], intcode[i+3], intcode[i+4]))
-    if len(firstcode) == 1:
-        opcode = int(firstcode)
-        #print("opcode {}".format(opcode))
-        i += execute(intcode, i, opcode, 0, 0)
-    else:
-        if int(firstcode[-1]) == 9:
-            #print("HALT")
-            break
-        opcode, mode1, mode2, mode3 = get_params(firstcode)
-        #print("opcode {}, modes: {}, {}".format(opcode, mode1, mode2))
-        i += execute(intcode, i, opcode, mode1, mode2)
+maxv = 0
+for p in permutations(range(0, 5)):
+        v = run(p[4],run(p[3],run(p[2],run(p[1],run(p[0],0,intcode.copy()),intcode.copy()),intcode.copy()),intcode.copy()),intcode.copy())
+        if v > maxv:
+            maxv = v
+print(maxv)

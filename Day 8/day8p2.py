@@ -36,5 +36,5 @@ for i in range(len(complete)):
         print()
         column = 0
     column +=1
-    print(complete[i], end=" ")
+    print("#", end=" ") if complete[i] == 1 else print(" ", end=" ")
 print()

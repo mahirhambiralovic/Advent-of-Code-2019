@@ -92,7 +92,7 @@ def execute(intcode):
                 print_grid(grid)
                 time.sleep(0.050)
             if playing_mode:
-                direction = input()
+                direction = input("a for left, d for right")
                 if direction == "a":
                     input1 = -1
                 elif direction == "d":
